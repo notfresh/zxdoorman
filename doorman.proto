@@ -1,0 +1,78 @@
+syntax = "proto3";
+option go_package = "github.com/notfresh/zxdoorman";
+package doorman;
+
+message Lease{
+  int64 expiry_time = 1;
+  int64 refresh_interval = 2;
+  int32 capacity=3;
+}
+
+
+message GetCapacityRequest{
+
+  message ResourceRequest{
+    string resource_id = 1;
+    int32 priority = 2;
+    Lease has = 3;
+    int32 want = 4;
+  }
+
+  string client_id = 1;
+  ResourceRequest resource = 2;
+}
+
+message GetCapacityResponse{
+
+  message ResourceResponse{
+    string resource_id = 1;
+    Lease gets = 2;
+    int32 safe_capacity = 3;
+  }
+
+  message MasterShip{
+    string master_address = 1;
+  }
+
+  repeated ResourceResponse response = 1;
+  MasterShip mastership = 2;
+}
+
+
+
+message AlgorithmPB{
+  enum Kind{
+    NO_ALGORITHM = 0;
+    STATIC = 1;
+    FAIR = 2;
+  }
+
+  message NamedParamter{
+    string name = 1;
+    string value = 2;
+  }
+
+  Kind kind = 1;
+  int64 lease_length = 2; // zx algo data
+  int64 refresh_interval = 3;
+  int64 learning_mode_length = 4;
+  repeated NamedParamter parameters = 5;
+}
+
+
+service Capacity {
+  rpc GetCapacity (GetCapacityRequest) returns (GetCapacityResponse);
+}
+
+message ResourcePB{
+  string identifer_glob = 1;
+  int32 capacity = 2;
+  int32 safe_capacity = 3;
+  // zx resource has a algorithm, but algorithm can be use
+  AlgorithmPB algo = 4;
+  string description = 5;
+}
+
+message ResourceRepository{
+  repeated ResourcePB resources = 1;
+}
