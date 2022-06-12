@@ -4,7 +4,7 @@
 // - protoc             v3.17.3
 // source: doorman.proto
 
-package zxdoorman
+package proto
 
 import (
 	context "context"

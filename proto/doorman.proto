@@ -1,0 +1,42 @@
+syntax = "proto3";
+option go_package = "github.com/notfresh/zxdoorman/proto";
+package doorman;
+
+message Lease{
+  int64 expiry_time = 1;
+  int64 refresh_interval = 2;
+  int32 capacity=3;
+}
+
+message GetCapacityRequest{
+  message ResourceRequest{
+    string resource_id = 1;
+    int32 priority = 2;
+    Lease has = 3;
+    int32 want = 4;
+  }
+
+  string client_id = 1;
+  repeated ResourceRequest resource = 2;
+}
+
+message GetCapacityResponse{
+
+  message ResourceResponse{
+    string resource_id = 1;
+    Lease gets = 2;
+    int32 safe_capacity = 3;
+  }
+
+  message MasterShip{
+    string master_address = 1;
+  }
+
+  repeated ResourceResponse response = 1;
+  MasterShip mastership = 2;
+}
+
+service Capacity {
+  rpc GetCapacity (GetCapacityRequest) returns (GetCapacityResponse);
+}
+

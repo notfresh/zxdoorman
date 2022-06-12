@@ -1,7 +1,8 @@
 package doorman
 
 import (
-	zx "github.com/notfresh/zxdoorman"
+	goproto "github.com/golang/protobuf/proto"
+	"github.com/notfresh/zxdoorman/proto"
 	"sync"
 	"time"
 )
@@ -13,7 +14,7 @@ type Resource struct {
 	algo          Algorithm
 	learnerAlgo   Algorithm
 	learningEndAt time.Time
-	config        *zx.ResourcePB
+	config        *proto.ResourcePB
 	expiryTime    time.Time
 }
 
@@ -42,31 +43,30 @@ func (res *Resource) Decide(request *Request) Lease {
 	return res.algo(res.store, res.Capacity(), request)
 }
 
-func (res *Resource) LoadConfig(cfg *zx.ResourcePB) {
+func (res *Resource) LoadConfig(cfg *proto.ResourcePB, expireTime *time.Time) {
 	res.mu.Lock()
 	defer res.mu.Unlock()
 	res.config = cfg
-	res.expiryTime = time.Now() // zx TODO
+	res.expiryTime = *expireTime
 	algo := cfg.GetAlgo()
 	res.algo = algoMapper[algo.GetKind()](algo)
 	res.learnerAlgo = Learn(algo)
 
 }
 
-func NewResource(resourceId string, cfg *zx.ResourcePB) *Resource {
-	res := &Resource{
-		resourceId: resourceId,
-		store:      NewLeaseStore(resourceId),
+// SetSafeCapacity sets the safe capacity in a response.
+func (res *Resource) SetSafeCapacity(resp *proto.GetCapacityResponse_ResourceResponse) {
+	res.mu.RLock()
+	defer res.mu.RUnlock()
+
+	// If the resource configuration does not have a safe capacity
+	// configured we return a dynamic safe capacity which equals
+	// the capacity divided by the number of clients that we
+	// know about.
+	// needs to take sub clients into account (in a multi-server tree).
+	if res.config.SafeCapacity == 0 {
+		resp.SafeCapacity = *goproto.Int32(res.config.Capacity / int32(res.store.Count()))
+	} else {
+		resp.SafeCapacity = *goproto.Int32(res.config.SafeCapacity)
 	}
-	res.LoadConfig(cfg)
-	//algoPB := cfg.GetAlgo()
-	//var learningLength time.Duration
-	//algoPBDura := algoPB.GetLearningModeLength()
-	//if algoPBDura != 0 {
-	//	learningLength = time.Second * time.Duration(algoPBDura)
-	//} else {
-	//	learningLength = time.Second * time.Duration(algoPB.GetLeaseLength())
-	//}
-	//TODO
-	return nil
 }

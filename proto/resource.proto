@@ -1,0 +1,36 @@
+syntax = "proto3";
+option go_package = "github.com/notfresh/zxdoorman/proto";
+package doorman;
+
+message AlgorithmPB{
+  enum Kind{
+    NO_ALGORITHM = 0;
+    STATIC = 1;
+    FAIR = 2;
+  }
+
+  message NamedParamter{
+    string name = 1;
+    string value = 2;
+  }
+
+  Kind kind = 1;
+  int64 lease_length = 2; // zx algo data
+  int64 refresh_interval = 3;
+  int64 learning_mode_length = 4;
+  repeated NamedParamter parameters = 5;
+}
+
+
+message ResourcePB{
+  string identifier_glob = 1;
+  int32 capacity = 2;
+  int32 safe_capacity = 3;
+  // zx resource has a algorithm, but algorithm can be use
+  AlgorithmPB algo = 4;
+  string description = 5;
+}
+
+message ResourceRepository{
+  repeated ResourcePB resources = 1;
+}

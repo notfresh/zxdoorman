@@ -1,0 +1,21 @@
+resources:
+  - identifier_glob: res1
+    capacity: 100
+    safe_capacity: 10
+    description: proportional example
+    algorithm:
+      kind: NO_ALGORITHM
+      lease_length: 15
+      refresh_interval: 5
+  - identifier_glob: "*"
+    capacity: 1000
+    safe_capacity: 10
+    description: default
+    algorithm:
+      kind: NO_ALGORITHM
+      lease_length: 60
+      refresh_interval: 15
+
+
+
+

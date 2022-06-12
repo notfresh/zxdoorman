@@ -1,14 +1,14 @@
 package doorman
 
 import (
-	zx "github.com/notfresh/zxdoorman"
+	zx "github.com/notfresh/zxdoorman/proto"
 	"time"
 )
 
 type Request struct {
 	ClientId string
-	Has      int
-	Want     int
+	Has      int32
+	Want     int32
 }
 
 type Algorithm func(store LeaseStore, capacity int, request *Request) Lease
